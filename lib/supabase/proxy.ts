@@ -64,11 +64,15 @@ export async function updateSession(request: NextRequest) {
 
   // 2) Authenticated: land on the right home and gate each section by role.
   if (user && isAppRoute) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.sub)
       .maybeSingle();
+
+    if (profileError) {
+      console.error("Failed to load profile role:", profileError);
+    }
 
     const role = profile?.role === "admin" ? "admin" : "student";
     const home = role === "admin" ? "/admin" : "/student";
