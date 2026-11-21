@@ -48,22 +48,48 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
   const { pathname } = request.nextUrl;
 
-  // 1) Not authenticated: protect everything except the auth flows — now including "/"
-  if (
-    !user &&
-    !pathname.startsWith("/login") &&
-    !pathname.startsWith("/auth")
-  ) {
+  const isAuthRoute =
+    pathname.startsWith("/login") || pathname.startsWith("/auth");
+  const isAppRoute =
+    pathname === "/" ||
+    pathname.startsWith("/student") ||
+    pathname.startsWith("/admin");
+
+  // 1) Not authenticated: everything except the auth flows requires a session.
+  if (!user && !isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
   }
 
-  // 2) Authenticated user landed on the (removed) root → send them to the app home
-  if (user && pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/protected";
-    return NextResponse.redirect(url);
+  // 2) Authenticated: land on the right home and gate each section by role.
+  if (user && isAppRoute) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.sub)
+      .maybeSingle();
+
+    const role = profile?.role === "admin" ? "admin" : "student";
+    const home = role === "admin" ? "/admin" : "/student";
+
+    if (pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = home;
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/admin") && role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = home;
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/student") && role !== "student") {
+      const url = request.nextUrl.clone();
+      url.pathname = home;
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

@@ -16,7 +16,7 @@ async function AuthInfo() {
   );
 }
 
-export default function ProtectedLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
