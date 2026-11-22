@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -82,9 +82,7 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
       )}
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Spinner /> Loading consultations…
-        </div>
+        <ConsultationListSkeleton />
       ) : error ? (
         <div className="flex items-center gap-3 text-sm text-destructive">
           <span>{error}</span>
@@ -225,6 +223,43 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
           />
         )}
     </div>
+  );
+}
+
+function ConsultationListSkeleton() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>When</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Reason</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="w-10" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <TableRow key={index}>
+            <TableCell>
+              <Skeleton className="h-4 w-36" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-28" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-48" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-8 w-8 rounded-md" />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
