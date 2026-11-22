@@ -40,7 +40,7 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/consultations");
+      const res = await fetch("/api/consultations", { cache: "no-store" });
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
