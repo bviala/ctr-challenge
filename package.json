@@ -7,7 +7,9 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "supabase test db"
+    "test:db": "supabase test db",
+    "types:local": "supabase gen types typescript > lib/database.types.ts",
+    "types:remote": "supabase gen types typescript --remote > lib/database.types.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",
