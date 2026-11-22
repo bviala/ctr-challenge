@@ -1,3 +1,9 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -6,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format";
+import { ConsultationDetailsSkeleton } from "./consultation-details-skeleton";
 import { StatusBadge } from "./status-badge";
 import type { Consultation, ConsultationEvent } from "./types";
 
@@ -18,13 +25,76 @@ const EVENT_LABELS: Record<ConsultationEvent["event_type"], string> = {
   status_changed: "Status changed",
 };
 
-export function ConsultationDetails({
-  consultation,
-  events,
-}: {
-  consultation: Consultation;
-  events: ConsultationEvent[];
-}) {
+export function ConsultationDetails({ id }: { id: string }) {
+  const [consultation, setConsultation] = useState<Consultation | null>(null);
+  const [events, setEvents] = useState<ConsultationEvent[]>([]);
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [consultationResponse, historyResponse] = await Promise.all([
+        fetch(`/api/consultations/${id}`, { cache: "no-store" }),
+        fetch(`/api/consultations/${id}/history`, { cache: "no-store" }),
+      ]);
+
+      const [consultationJson, historyJson] = await Promise.all([
+        consultationResponse.json().catch(() => null),
+        historyResponse.json().catch(() => null),
+      ]);
+
+      if (consultationResponse.status === 404) {
+        setError("Consultation not found.");
+        return;
+      }
+
+      if (!consultationResponse.ok) {
+        throw new Error(
+          consultationJson?.error ?? "Could not load the consultation.",
+        );
+      }
+
+      if (!historyResponse.ok) {
+        throw new Error(
+          historyJson?.error ?? "Could not load the consultation history.",
+        );
+      }
+
+      setError(null);
+      setConsultation(consultationJson as Consultation);
+      setEvents((historyJson ?? []) as ConsultationEvent[]);
+      setLoadedId(id);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Could not load the consultation.",
+      );
+    }
+  }, [id]);
+
+  useEffect(() => {
+    // Initial load. load() is async and only updates state after the fetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
+
+  // Show stale data while a refresh is in flight; only show the skeleton when
+  // there is no data for the current id (first load or id change).
+  const hasDataForId = loadedId === id && consultation !== null;
+
+  if (!hasDataForId && error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Could not load the consultation</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!hasDataForId) {
+    return <ConsultationDetailsSkeleton />;
+  }
+
   return (
     <>
       <Card>
