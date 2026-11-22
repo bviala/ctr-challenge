@@ -48,6 +48,12 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
   const { pathname } = request.nextUrl;
 
+  // API routes do their own auth and return JSON 401s. The proxy only
+  // refreshes the session here; it must not redirect them to the login page.
+  if (pathname.startsWith("/api")) {
+    return supabaseResponse;
+  }
+
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/auth");
   const isAppRoute =
