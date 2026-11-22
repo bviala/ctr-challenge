@@ -12,6 +12,27 @@ import type {
 } from "@/components/consultations/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Trusted origin for the server-side call to our own API routes.
+ *
+ * Never derive this from the request (Host / X-Forwarded-Host): a forged
+ * header would make the server issue a request to an attacker-controlled
+ * host and forward the user's session cookie to it (SSRF + credential leak).
+ */
+function appBaseUrl() {
+  const url =
+    process.env.APP_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000");
+
+  return url.replace(/\/+$/, "");
+}
+
 async function ConsultationPageContent({
   params,
 }: {
@@ -19,16 +40,14 @@ async function ConsultationPageContent({
 }) {
   const { id } = await params;
 
-  // A server component can't use a relative URL, so derive the origin from the
-  // incoming request and forward the cookies so the API route sees the session.
-  const requestHeaders = await headers();
-  const host =
-    requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
-  const baseUrl = host
-    ? `${protocol}://${host}`
-    : (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
-  const cookie = requestHeaders.get("cookie") ?? "";
+  // The id is interpolated into the API path; reject non-UUIDs so it cannot be
+  // used for path traversal within the app.
+  if (!UUID_PATTERN.test(id)) {
+    notFound();
+  }
+
+  const baseUrl = appBaseUrl();
+  const cookie = (await headers()).get("cookie") ?? "";
 
   const [consultationResponse, historyResponse] = await Promise.all([
     fetch(`${baseUrl}/api/consultations/${id}`, {
