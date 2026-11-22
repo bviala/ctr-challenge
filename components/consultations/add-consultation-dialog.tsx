@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function AddConsultationDialog({
@@ -147,11 +148,7 @@ export function AddConsultationDialog({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date
-                      ? date.toLocaleDateString(undefined, {
-                          dateStyle: "medium",
-                        })
-                      : "Pick a date"}
+                    {date ? formatDate(date) : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
