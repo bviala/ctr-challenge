@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -17,6 +18,7 @@ async function AuthInfo() {
     <div className="flex items-center gap-4">
       Hey, {user?.email}!
       <LogoutButton />
+      <ThemeSwitcher />
     </div>
   );
 }
