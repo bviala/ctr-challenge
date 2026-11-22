@@ -62,17 +62,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data, error } = await supabase
-    .from("consultations")
-    .insert({
-      student_id: user.id,
-      first_name,
-      last_name,
-      reason,
-      scheduled_at,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc("create_consultation", {
+    p_first_name: first_name,
+    p_last_name: last_name,
+    p_reason: reason,
+    p_scheduled_at: scheduled_at,
+  });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
