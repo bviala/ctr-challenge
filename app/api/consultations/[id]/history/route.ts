@@ -22,7 +22,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("consultation_events")
-    .select("*")
+    .select("*, actor:profiles(email)")
     .eq("consultation_id", id)
     .order("created_at", { ascending: true });
 

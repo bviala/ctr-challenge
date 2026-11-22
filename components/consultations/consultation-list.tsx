@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 
 import { AddConsultationDialog } from "@/components/consultations/add-consultation-dialog";
 import { ConsultationStatusDialog } from "@/components/consultations/consultation-status-dialog";
 import { RescheduleConsultationDialog } from "@/components/consultations/reschedule-consultation-dialog";
+import { StatusBadge } from "@/components/consultations/status-badge";
 import type { Consultation } from "@/components/consultations/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ import { formatDateTime } from "@/lib/format";
 type Action = "complete" | "reopen" | "cancel" | "reschedule";
 
 export function ConsultationList({ canCreate = false }: { canCreate?: boolean }) {
+  const router = useRouter();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +112,23 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
               const isCancelled = consultation.status === "cancelled";
 
               return (
-                <TableRow key={consultation.id}>
+                <TableRow
+                  key={consultation.id}
+                  className="cursor-pointer"
+                  tabIndex={0}
+                  onClick={() =>
+                    router.push(`/consultations/${consultation.id}`)
+                  }
+                  onKeyDown={(e) => {
+                    if (
+                      e.target === e.currentTarget &&
+                      (e.key === "Enter" || e.key === " ")
+                    ) {
+                      e.preventDefault();
+                      router.push(`/consultations/${consultation.id}`);
+                    }
+                  }}
+                >
                   <TableCell className="whitespace-nowrap">
                     {formatDateTime(consultation.scheduled_at)}
                   </TableCell>
@@ -123,7 +141,10 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
                   <TableCell>
                     <StatusBadge status={consultation.status} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
                     {isCancelled ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
@@ -207,12 +228,3 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
   );
 }
 
-function StatusBadge({ status }: { status: Consultation["status"] }) {
-  if (status === "completed") {
-    return <Badge>Completed</Badge>;
-  }
-  if (status === "cancelled") {
-    return <Badge variant="destructive">Cancelled</Badge>;
-  }
-  return <Badge variant="secondary">Scheduled</Badge>;
-}

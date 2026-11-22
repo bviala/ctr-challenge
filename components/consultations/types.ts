@@ -11,3 +11,27 @@ export type Consultation = {
   created_at: string;
   updated_at: string;
 };
+
+export type ConsultationEventType =
+  | "created"
+  | "rescheduled"
+  | "cancelled"
+  | "completed"
+  | "reopened"
+  | "status_changed";
+
+export type ConsultationEventActor = { email: string | null } | null;
+
+export type ConsultationEvent = {
+  id: number;
+  consultation_id: string;
+  event_type: ConsultationEventType;
+  actor_id: string | null;
+  actor: ConsultationEventActor;
+  old_scheduled_at: string | null;
+  new_scheduled_at: string | null;
+  old_status: ConsultationStatus | null;
+  new_status: ConsultationStatus | null;
+  note: string | null;
+  created_at: string;
+};
