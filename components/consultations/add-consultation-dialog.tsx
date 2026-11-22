@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
 
@@ -27,8 +26,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-export function AddConsultationDialog() {
-  const router = useRouter();
+export function AddConsultationDialog({
+  onCreated,
+}: {
+  onCreated?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -77,7 +79,7 @@ export function AddConsultationDialog() {
       setReason("");
       setDate(undefined);
       setTime("09:00");
-      router.refresh();
+      onCreated?.();
     } catch {
       toast.error("Could not create the consultation.");
     } finally {
