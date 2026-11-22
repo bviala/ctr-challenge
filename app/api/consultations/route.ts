@@ -48,14 +48,55 @@ export async function POST(request: Request) {
 
   const { first_name, last_name, reason, scheduled_at } = body;
 
-  if (!first_name || !last_name || !reason || !scheduled_at) {
+  if (
+    typeof first_name !== "string" ||
+    typeof last_name !== "string" ||
+    typeof reason !== "string" ||
+    typeof scheduled_at !== "string"
+  ) {
     return NextResponse.json(
-      { error: "first_name, last_name, reason and scheduled_at are required" },
+      {
+        error:
+          "first_name, last_name, reason and scheduled_at must be strings",
+      },
       { status: 400 },
     );
   }
 
-  if (new Date(scheduled_at) <= new Date()) {
+  const firstName = first_name.trim();
+  const lastName = last_name.trim();
+  const trimmedReason = reason.trim();
+
+  if (!firstName || !lastName || !trimmedReason) {
+    return NextResponse.json(
+      { error: "first_name, last_name and reason are required" },
+      { status: 400 },
+    );
+  }
+
+  if (firstName.length > 100 || lastName.length > 100) {
+    return NextResponse.json(
+      { error: "first_name and last_name must be at most 100 characters" },
+      { status: 400 },
+    );
+  }
+
+  if (trimmedReason.length > 2000) {
+    return NextResponse.json(
+      { error: "reason must be at most 2000 characters" },
+      { status: 400 },
+    );
+  }
+
+  const scheduledDate = new Date(scheduled_at);
+  if (Number.isNaN(scheduledDate.getTime())) {
+    return NextResponse.json(
+      { error: "scheduled_at must be a valid date" },
+      { status: 400 },
+    );
+  }
+
+  if (scheduledDate.getTime() <= Date.now()) {
     return NextResponse.json(
       { error: "scheduled_at must be in the future" },
       { status: 400 },
@@ -63,9 +104,9 @@ export async function POST(request: Request) {
   }
 
   const { data, error } = await supabase.rpc("create_consultation", {
-    p_first_name: first_name,
-    p_last_name: last_name,
-    p_reason: reason,
+    p_first_name: firstName,
+    p_last_name: lastName,
+    p_reason: trimmedReason,
     p_scheduled_at: scheduled_at,
   });
 
