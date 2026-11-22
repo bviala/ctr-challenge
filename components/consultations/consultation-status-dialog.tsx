@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -70,10 +70,6 @@ export function ConsultationStatusDialog({
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const config = CONFIG[action];
-
-  useEffect(() => {
-    setNote("");
-  }, [consultation.id, action]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

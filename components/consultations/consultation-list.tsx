@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal } from "lucide-react";
 
@@ -37,29 +37,30 @@ export function ConsultationList({ canCreate = false }: { canCreate?: boolean })
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Consultation | null>(null);
   const [action, setAction] = useState<Action | null>(null);
-  const hasLoaded = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!hasLoaded.current) setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/consultations");
       const json = await res.json().catch(() => null);
+
       if (!res.ok) {
         throw new Error(json?.error ?? "Could not load consultations.");
       }
+
+      setError(null);
       setConsultations((json ?? []) as Consultation[]);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Could not load consultations.",
       );
     } finally {
-      hasLoaded.current = true;
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // Initial load. refresh() is async and only updates state after the fetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
   }, [refresh]);
 

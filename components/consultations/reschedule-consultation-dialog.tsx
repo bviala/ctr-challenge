@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
 
@@ -50,12 +50,6 @@ export function RescheduleConsultationDialog({
   const [time, setTime] = useState(() => toTimeInput(consultation.scheduled_at));
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setDate(new Date(consultation.scheduled_at));
-    setTime(toTimeInput(consultation.scheduled_at));
-    setNote("");
-  }, [consultation.id, consultation.scheduled_at]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
