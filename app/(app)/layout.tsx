@@ -1,9 +1,14 @@
 import { LogoutButton } from "@/components/logout-button";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 async function AuthInfo() {
+  // getClaims() reads the current time to check JWT expiry. With
+  // partialPrefetching, sync IO in a prefetch/prerender stage is an error, so
+  // declare this read as dynamic (request-time) explicitly.
+  await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
