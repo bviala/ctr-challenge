@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 
 import { BackButton } from "@/components/consultations/back-button";
 import { ConsultationDetails } from "@/components/consultations/consultation-details";
@@ -9,6 +10,7 @@ import type {
   Consultation,
   ConsultationEvent,
 } from "@/components/consultations/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 async function ConsultationPageContent({
   params,
@@ -49,9 +51,14 @@ async function ConsultationPageContent({
 
   if (!consultationResponse.ok || !historyResponse.ok) {
     return (
-      <p className="text-sm text-destructive">
-        Could not load the consultation.
-      </p>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Could not load the consultation</AlertTitle>
+        <AlertDescription>
+          Something went wrong while loading this consultation. Please try
+          again in a moment.
+        </AlertDescription>
+      </Alert>
     );
   }
 
